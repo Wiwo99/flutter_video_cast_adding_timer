@@ -10,7 +10,7 @@ abstract class AirPlayPlatform {
   /// The default instance of [AirPlayPlatform] to use.
   ///
   /// Defaults to [MethodChannelAirPlay].
-  static get instance => _instance;
+  static AirPlayPlatform get instance => _instance;
 
   /// Initializes the platform interface with [id].
   ///

@@ -1,13 +1,14 @@
 part of flutter_video_cast;
 
-final ChromeCastPlatform _chromeCastPlatform = ChromeCastPlatform.instance;
+final ChromeCastPlatform _chromeCastPlatform =
+    ChromeCastPlatform.instance as ChromeCastPlatform;
 
 /// Controller for a single ChromeCastButton instance running on the host platform.
 class ChromeCastController {
+  ChromeCastController._({required this.id});
+
   /// The id for this controller
   final int id;
-
-  ChromeCastController._({required this.id});
 
   /// Initialize control of a [ChromeCastButton] with [id].
   static Future<ChromeCastController> init(int id) async {
@@ -28,6 +29,11 @@ class ChromeCastController {
   /// Load a new media by providing an [url].
   Future<void> loadMedia(String url, Map<String, dynamic> meta) {
     return _chromeCastPlatform.loadMedia(url, meta, id: id);
+  }
+
+  /// Load subtitles
+  Future<void> activeTracks() {
+    return _chromeCastPlatform.activeTracks(id: id);
   }
 
   /// Plays the video playback.

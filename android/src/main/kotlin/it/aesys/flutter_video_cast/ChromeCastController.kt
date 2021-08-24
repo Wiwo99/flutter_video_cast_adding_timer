@@ -2,11 +2,14 @@ package it.aesys.flutter_video_cast
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.ContextThemeWrapper
+import android.widget.ArrayAdapter
 import androidx.mediarouter.app.MediaRouteButton
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaLoadOptions
 import com.google.android.gms.cast.MediaMetadata
+import com.google.android.gms.cast.MediaTrack
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.Session
@@ -19,14 +22,18 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 
+
 class ChromeCastController(
-        messenger: BinaryMessenger,
-        viewId: Int,
-        context: Context?
-) : PlatformView, MethodChannel.MethodCallHandler, SessionManagerListener<Session>, PendingResult.StatusListener {
+    messenger: BinaryMessenger,
+    viewId: Int,
+    context: Context?
+) : PlatformView, MethodChannel.MethodCallHandler, SessionManagerListener<Session>,
+    PendingResult.StatusListener {
     private val channel = MethodChannel(messenger, "flutter_video_cast/chromeCast_$viewId")
-    private val chromeCastButton = MediaRouteButton(ContextThemeWrapper(context, R.style.Theme_AppCompat_NoActionBar))
+    private val chromeCastButton =
+        MediaRouteButton(ContextThemeWrapper(context, R.style.Theme_AppCompat_NoActionBar))
     private val sessionManager = CastContext.getSharedInstance()?.sessionManager
+    lateinit var subtitle: String
 
     init {
         CastButtonFactory.setUpMediaRouteButton(context, chromeCastButton)
@@ -36,23 +43,54 @@ class ChromeCastController(
     private fun loadMedia(args: Any?) {
         if (args is Map<*, *>) {
             val url = args["url"] as? String
-
+            subtitle = args["subTitle"] as String
             val meta = MediaMetadata(MediaMetadata.MEDIA_TYPE_GENERIC)
             meta.putString(MediaMetadata.KEY_TITLE, args["title"] as? String)
-            meta.putString(MediaMetadata.KEY_ARTIST, args["artist"] as? String)
-            (args["image-url"] as? String).let{imageUrl ->
+//            meta.putString(MediaMetadata.KEY_SUBTITLE, args["subTitle"] as? String)
+            (args["image"] as? String).let { imageUrl ->
                 meta.addImage(WebImage(Uri.parse(imageUrl)))
             }
+            val subtitle = MediaTrack.Builder(1, MediaTrack.TYPE_TEXT)
+                .setName("Arabic")
+                .setSubtype(MediaTrack.SUBTYPE_SUBTITLES)
+                .setContentId(args["subTitle"] as? String)
+                .setLanguage("ar")
+                .build()
 
-            val media = MediaInfo.Builder(url).setMetadata(meta).build()
+            val tracks: MutableList<MediaTrack> = ArrayList()
+            tracks.add(subtitle)
+
+            val media =
+                MediaInfo.Builder(url).setStreamType(args["streamType"] as Int)
+                    .setMediaTracks(tracks).setMetadata(meta)
+                    .build()
             val options = MediaLoadOptions.Builder().build()
-            val request = sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
+            val request =
+                sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
+
             request?.addStatusListener(this)
         }
     }
 
     private fun play() {
+//        val array = LongArray(1,init = {1})
+//
+//        sessionManager?.currentCastSession?.remoteMediaClient?.setActiveMediaTracks(
+//            array
+//        )
+
         val request = sessionManager?.currentCastSession?.remoteMediaClient?.play()
+        request?.addStatusListener(this)
+    }
+
+
+    private fun activeTracks() {
+        val array = LongArray(1,init = {1})
+
+        val request = sessionManager?.currentCastSession?.remoteMediaClient?.setActiveMediaTracks(
+            array
+        )
+        Log.e("activeTracks", "tracks activated ")
         request?.addStatusListener(this)
     }
 
@@ -67,9 +105,13 @@ class ChromeCastController(
             var interval = args["interval"] as? Double
             interval = interval?.times(1000)
             if (relative) {
-                interval = interval?.plus(sessionManager?.currentCastSession?.remoteMediaClient?.mediaStatus?.streamPosition ?: 0)
+                interval = interval?.plus(
+                    sessionManager?.currentCastSession?.remoteMediaClient?.mediaStatus?.streamPosition
+                        ?: 0
+                )
             }
-            val request = sessionManager?.currentCastSession?.remoteMediaClient?.seek(interval?.toLong() ?: 0)
+            val request =
+                sessionManager?.currentCastSession?.remoteMediaClient?.seek(interval?.toLong() ?: 0)
             request?.addStatusListener(this)
         }
     }
@@ -77,7 +119,9 @@ class ChromeCastController(
     private fun setVolume(args: Any?) {
         if (args is Map<*, *>) {
             val volume = args["volume"] as? Double
-            val request = sessionManager?.currentCastSession?.remoteMediaClient?.setStreamVolume(volume ?: 0.0)
+            val request = sessionManager?.currentCastSession?.remoteMediaClient?.setStreamVolume(
+                volume ?: 0.0
+            )
             request?.addStatusListener(this)
         }
     }
@@ -89,15 +133,18 @@ class ChromeCastController(
         request?.addStatusListener(this)
     }
 
-    private fun isPlaying() = sessionManager?.currentCastSession?.remoteMediaClient?.isPlaying ?: false
+    private fun isPlaying() =
+        sessionManager?.currentCastSession?.remoteMediaClient?.isPlaying ?: false
 
     private fun isConnected() = sessionManager?.currentCastSession?.isConnected ?: false
 
     private fun endSession() = sessionManager?.endCurrentSession(true)
 
-    private fun position() = sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
+    private fun position() =
+        sessionManager?.currentCastSession?.remoteMediaClient?.approximateStreamPosition ?: 0
 
-    private fun duration() = sessionManager?.currentCastSession?.remoteMediaClient?.mediaInfo?.streamDuration ?: 0
+    private fun duration() =
+        sessionManager?.currentCastSession?.remoteMediaClient?.mediaInfo?.streamDuration ?: 0
 
     private fun addSessionListener() {
         sessionManager?.addSessionManagerListener(this)
@@ -116,7 +163,7 @@ class ChromeCastController(
     // Flutter methods handling
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when(call.method) {
+        when (call.method) {
             "chromeCast#wait" -> result.success(null)
             "chromeCast#loadMedia" -> {
                 loadMedia(call.arguments)
@@ -124,6 +171,10 @@ class ChromeCastController(
             }
             "chromeCast#play" -> {
                 play()
+                result.success(null)
+            }
+            "chromeCast#activeTracks" -> {
+                activeTracks()
                 result.success(null)
             }
             "chromeCast#pause" -> {
@@ -189,7 +240,6 @@ class ChromeCastController(
     }
 
     override fun onSessionStarting(p0: Session?) {
-
     }
 
     override fun onSessionEnding(p0: Session?) {
@@ -205,6 +255,11 @@ class ChromeCastController(
     override fun onComplete(status: Status?) {
         if (status?.isSuccess == true) {
             channel.invokeMethod("chromeCast#requestDidComplete", null)
+
+//            // set tracks
+//            sessionManager?.currentCastSession?.remoteMediaClient?.setActiveMediaTracks(
+//                LongArray(1,init = {1})
+//            )
         }
     }
 }

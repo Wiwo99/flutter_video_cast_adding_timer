@@ -1,6 +1,7 @@
 part of flutter_video_cast;
 
-final AirPlayPlatform _airPlayPlatform = AirPlayPlatform.instance;
+final AirPlayPlatform _airPlayPlatform =
+    AirPlayPlatform.instance as AirPlayPlatform;
 
 /// Widget that displays the AirPlay button.
 class AirPlayButton extends StatelessWidget {
@@ -31,7 +32,7 @@ class AirPlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> args = {
+    final Map<String, dynamic> args = <String, dynamic>{
       'red': color.red,
       'green': color.green,
       'blue': color.blue,
@@ -54,7 +55,9 @@ class AirPlayButton extends StatelessWidget {
   Future<void> _onPlatformViewCreated(int id) async {
     await _airPlayPlatform.init(id);
     if (onRoutesOpening != null) {
-      _airPlayPlatform.onRoutesOpening(id: id).listen((_) => onRoutesOpening!());
+      _airPlayPlatform
+          .onRoutesOpening(id: id)
+          .listen((_) => onRoutesOpening!());
     }
     if (onRoutesClosed != null) {
       _airPlayPlatform

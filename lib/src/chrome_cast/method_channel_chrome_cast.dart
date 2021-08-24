@@ -7,7 +7,8 @@ import 'package:flutter_video_cast/src/chrome_cast/chrome_cast_event.dart';
 import 'package:flutter_video_cast/src/chrome_cast/chrome_cast_platform.dart';
 import 'package:stream_transform/stream_transform.dart';
 
-/// An implementation of [ChromeCastPlatform] that uses [MethodChannel] to communicate with the native code.
+/// An implementation of [ChromeCastPlatform]
+/// that uses [MethodChannel] to communicate with the native code.
 class MethodChannelChromeCast extends ChromeCastPlatform {
   // Keep a collection of id -> channel
   // Every method call passes the int id
@@ -73,7 +74,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   @override
   Future<void> loadMedia(String url, Map<String, dynamic> meta,
       {required int id}) {
-    final Map<String, dynamic> args = {'url': url};
+    final Map<String, dynamic> args = <String, dynamic>{'url': url};
     args.addAll(meta);
 
     return channel(id)!.invokeMethod<void>('chromeCast#loadMedia', args);
@@ -85,13 +86,18 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   @override
+  Future<void> activeTracks({required int id}) {
+    return channel(id)!.invokeMethod<void>('chromeCast#activeTracks');
+  }
+
+  @override
   Future<void> pause({required int id}) {
     return channel(id)!.invokeMethod<void>('chromeCast#pause');
   }
 
   @override
   Future<void> seek(bool relative, double interval, {required int id}) {
-    final Map<String, dynamic> args = {
+    final Map<String, dynamic> args = <String, dynamic>{
       'relative': relative,
       'interval': interval
     };
@@ -100,7 +106,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
 
   @override
   Future<void> setVolume(double volume, {required int id}) {
-    final Map<String, dynamic> args = {'volume': volume};
+    final Map<String, dynamic> args = <String, dynamic>{'volume': volume};
     return channel(id)!.invokeMethod<void>('chromeCast#setVolume', args);
   }
 
@@ -159,7 +165,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
         break;
       case 'chromeCast#requestDidFail':
         _eventStreamController
-            .add(RequestDidFailEvent(id, call.arguments['error']));
+            .add(RequestDidFailEvent(id, call.arguments['error'] as String?));
         break;
       default:
         throw MissingPluginException();

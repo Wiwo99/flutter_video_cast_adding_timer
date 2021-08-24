@@ -10,7 +10,7 @@ abstract class ChromeCastPlatform {
   /// The default instance of [ChromeCastPlatform] to use.
   ///
   /// Defaults to [MethodChannelChromeCast].
-  static get instance => _instance;
+  static ChromeCastPlatform get instance => _instance;
 
   /// Initializes the platform interface with [id].
   ///
@@ -62,6 +62,11 @@ abstract class ChromeCastPlatform {
   /// Plays the video playback.
   Future<void> play({required int id}) {
     throw UnimplementedError('play() has not been implemented.');
+  }
+
+  /// activeTracks subtitles on the video playback.
+  Future<void> activeTracks({required int id}) {
+    throw UnimplementedError('activeTracks() has not been implemented.');
   }
 
   /// Pauses the video playback.

@@ -53,7 +53,7 @@ class ChromeCastButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> args = {
+    final Map<String, dynamic> args = <String, dynamic>{
       'red': color.red,
       'green': color.green,
       'blue': color.blue,
