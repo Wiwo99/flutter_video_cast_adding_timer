@@ -106,6 +106,9 @@ class ChromeCastController: NSObject, FlutterPlatformView {
             result(nil)
         case "chromeCast#position":
             result(position())
+        case "chromeCast#loadMediaTvShow":
+            loadMediaTvShow(args: call.arguments)
+            result(nil)
         default:
             result(nil)
             break
@@ -123,6 +126,33 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         let mediaInformation = GCKMediaInformationBuilder(contentURL: mediaUrl).build()
         if let request = sessionManager.currentCastSession?.remoteMediaClient?.loadMedia(mediaInformation) {
             request.delegate = self
+        }
+    }
+
+    private func loadMediaTvShow(args: Any?){
+        guard
+            let args = args as? [String: Any],
+            let url = args["url"] as? String,
+            let image = args["image"] as? String,
+            let seriesTitle = args["seriesTitle"] as? String,
+            let season = args["season"] as? Int,
+            let episode = args["episode"] as? Int,
+            let mediaUrl = URL(string: url) else {
+                print("Invalid URL")
+                return
+            }
+        let metadata = GCKMediaMetadata(metadataType: GCKMediaMetadataType.tvShow)
+        metadata.setString(seriesTitle,forKey:kGCKMetadataKeySeriesTitle)
+        metadata.setInteger(season,forKey:kGCKMetadataKeySeasonNumber)
+        metadata.setInteger(episode,forKey:kGCKMetadataKeyEpisodeNumber)
+        metadata.addImage(GCKImage(url:URL(string:image)!,width: 480,height: 360))
+        let mediaInfoBuilder = GCKMediaInformationBuilder.init(contentURL: mediaUrl)
+        mediaInfoBuilder.streamType=GCKMediaStreamType.buffered;
+        mediaInfoBuilder.contentType="video/mp4"
+        mediaInfoBuilder.metadata=metadata;
+        let mediaInformation = mediaInfoBuilder.build()
+        if let request = sessionManager.currentSession?.remoteMediaClient?.loadMedia (mediaInformation) {
+        request.delegate = self
         }
     }
 

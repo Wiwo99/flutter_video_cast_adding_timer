@@ -173,14 +173,17 @@ class _CastSampleState extends State<CastSample> {
 
   Future<void> _onSessionStarted() async {
     setState(() => _state = AppState.connected);
-    await _controller.loadMedia(
-        'http://demo.unified-streaming.com/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-        {
-          "title": "Tomorrowland",
-          "artist": "Edd Fisher",
-          "image-url":
-              "https://www.pbsfm.org.au/sites/default/files/styles/program_thumbnail/public/program/tomorrowland.jpg"
-        });
+    String urlVideo =
+        "https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8";
+
+    await _controller.loadMediaTvShow({
+      "url": urlVideo,
+      "seriesTitle": "Prova",
+      "season": 1,
+      "episode": 10,
+      "image":
+          "https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png"
+    });
   }
 
   Future<void> _onSessionEnded() async {

@@ -81,6 +81,12 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   @override
+  Future<void> loadMediaTvShow(Map<String, dynamic> meta, {required int id}){
+    return channel(id)!.invokeMethod<void>('chromeCast#loadMediaTvShow', meta);
+  }
+
+
+  @override
   Future<void> play({required int id}) {
     return channel(id)!.invokeMethod<void>('chromeCast#play');
   }

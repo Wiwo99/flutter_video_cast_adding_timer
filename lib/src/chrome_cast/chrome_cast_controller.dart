@@ -31,6 +31,10 @@ class ChromeCastController {
     return _chromeCastPlatform.loadMedia(url, meta, id: id);
   }
 
+  Future<void> loadMediaTvShow(Map<String, dynamic> meta){
+    return _chromeCastPlatform.loadMediaTvShow(meta, id: id);
+  }
+
   /// Load subtitles
   Future<void> activeTracks() {
     return _chromeCastPlatform.activeTracks(id: id);

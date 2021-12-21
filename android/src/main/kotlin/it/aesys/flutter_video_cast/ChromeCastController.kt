@@ -46,23 +46,14 @@ class ChromeCastController(
             subtitle = args["subTitle"] as String
             val meta = MediaMetadata(MediaMetadata.MEDIA_TYPE_GENERIC)
             meta.putString(MediaMetadata.KEY_TITLE, args["title"] as? String)
-//            meta.putString(MediaMetadata.KEY_SUBTITLE, args["subTitle"] as? String)
             (args["image"] as? String).let { imageUrl ->
                 meta.addImage(WebImage(Uri.parse(imageUrl)))
             }
-            val subtitle = MediaTrack.Builder(1, MediaTrack.TYPE_TEXT)
-                .setName("Arabic")
-                .setSubtype(MediaTrack.SUBTYPE_SUBTITLES)
-                .setContentId(args["subTitle"] as? String)
-                .setLanguage("ar")
-                .build()
-
-            val tracks: MutableList<MediaTrack> = ArrayList()
-            tracks.add(subtitle)
+            
 
             val media =
                 MediaInfo.Builder(url).setStreamType(args["streamType"] as Int)
-                    .setMediaTracks(tracks).setMetadata(meta)
+                    .setMetadata(meta)
                     .build()
             val options = MediaLoadOptions.Builder().build()
             val request =
@@ -72,13 +63,35 @@ class ChromeCastController(
         }
     }
 
-    private fun play() {
-//        val array = LongArray(1,init = {1})
-//
-//        sessionManager?.currentCastSession?.remoteMediaClient?.setActiveMediaTracks(
-//            array
-//        )
+    private fun loadMediaTvShow(args: Any?){
+        
+        if (args is Map<*, *>) {
+            val url = args["url"] as? String
+            val image = args["image"] as? String
+            val seriesTitle = args["seriesTitle"] as? String
+            val season = args["season"] as Int
+            val episode = args["episode"] as Int
+            
+            val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_TV_SHOW)
+            movieMetadata.putString(MediaMetadata.KEY_SERIES_TITLE, seriesTitle)
+            movieMetadata.putInt(MediaMetadata.KEY_SEASON_NUMBER, season)
+            movieMetadata.putInt(MediaMetadata.KEY_EPISODE_NUMBER, episode)
+            movieMetadata.addImage(WebImage(Uri.parse(image)))
 
+            val media =
+                MediaInfo.Builder(url).setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                    .setMetadata(movieMetadata)
+                    .build()
+            val options = MediaLoadOptions.Builder().build()
+            val request =
+                sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
+
+            request?.addStatusListener(this)
+        }
+    }
+    
+
+    private fun play() {
         val request = sessionManager?.currentCastSession?.remoteMediaClient?.play()
         request?.addStatusListener(this)
     }
@@ -169,6 +182,10 @@ class ChromeCastController(
                 loadMedia(call.arguments)
                 result.success(null)
             }
+            "chromeCast#loadMediaTvShow" -> {
+                loadMediaTvShow(call.arguments)
+                result.success(null)
+            }
             "chromeCast#play" -> {
                 play()
                 result.success(null)
@@ -255,11 +272,6 @@ class ChromeCastController(
     override fun onComplete(status: Status?) {
         if (status?.isSuccess == true) {
             channel.invokeMethod("chromeCast#requestDidComplete", null)
-
-//            // set tracks
-//            sessionManager?.currentCastSession?.remoteMediaClient?.setActiveMediaTracks(
-//                LongArray(1,init = {1})
-//            )
         }
     }
 }

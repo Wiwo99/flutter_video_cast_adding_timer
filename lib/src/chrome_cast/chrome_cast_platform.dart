@@ -59,6 +59,14 @@ abstract class ChromeCastPlatform {
     throw UnimplementedError('loadMedia() has not been implemented.');
   }
 
+  Future<void> loadMediaTvShow(
+      Map<String, dynamic> meta, {
+        required int id,
+      }) {
+    throw UnimplementedError('loadMedia() has not been implemented.');
+  }
+
+
   /// Plays the video playback.
   Future<void> play({required int id}) {
     throw UnimplementedError('play() has not been implemented.');
