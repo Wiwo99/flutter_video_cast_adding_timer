@@ -71,6 +71,7 @@ class ChromeCastController(
             val seriesTitle = args["seriesTitle"] as? String
             val season = args["season"] as Int
             val episode = args["episode"] as Int
+            var currentTime = args["currentTime"] as Int
             
             val movieMetadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_TV_SHOW)
             movieMetadata.putString(MediaMetadata.KEY_SERIES_TITLE, seriesTitle)
@@ -82,7 +83,7 @@ class ChromeCastController(
                 MediaInfo.Builder(url).setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                     .setMetadata(movieMetadata)
                     .build()
-            val options = MediaLoadOptions.Builder().build()
+            val options = MediaLoadOptions.Builder().setPlayPosition(currentTime?.toLong()).build()
             val request =
                 sessionManager?.currentCastSession?.remoteMediaClient?.load(media, options)
 

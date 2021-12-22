@@ -181,6 +181,7 @@ class _CastSampleState extends State<CastSample> {
       "seriesTitle": "Prova",
       "season": 1,
       "episode": 10,
+      "currentTime": 40000,
       "image":
           "https://upload.wikimedia.org/wikipedia/commons/2/22/Big.Buck.Bunny.-.Bunny.Portrait.png"
     });
